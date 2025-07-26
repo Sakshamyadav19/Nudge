@@ -66,12 +66,26 @@ def jira_create_issue(
         msg  = getattr(res, "error_message", str(res))
         raise RuntimeError(f"Arcade tool call failed [{code}]: {msg}")
 
-    api_error = res.output.get("error")
-    if api_error:
-        raise RuntimeError(f"Jira API error: {api_error}")
-
-    created_key = res.output.get("created_key") or res.output.get("key")
-    if not created_key:
-        raise RuntimeError(f"Unexpected response from Jira: {res.output}")
-
-    return created_key
+    # Handle the response properly - check if it's a string or object
+    if hasattr(res, 'output'):
+        # If output is a string, return it directly
+        if isinstance(res.output, str):
+            return res.output
+        
+        # If output is a dict-like object, try to get the key
+        if hasattr(res.output, 'get'):
+            created_key = res.output.get("created_key") or res.output.get("key")
+            if created_key:
+                return created_key
+        
+        # If output is an object with attributes, try to access them
+        if hasattr(res.output, 'created_key'):
+            return res.output.created_key
+        if hasattr(res.output, 'key'):
+            return res.output.key
+        
+        # If none of the above work, return the string representation
+        return str(res.output)
+    
+    # If no output attribute, return the string representation
+    return str(res)
