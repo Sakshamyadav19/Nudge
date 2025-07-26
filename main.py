@@ -103,9 +103,9 @@ def get_conversation_context_for_llm():
     
     return "\n".join(context_lines)
 
-# ——— Arcade Slack Endpoints ———
+# ——— Slack SDK Endpoints ———
 
-@app.route("/api/arcade/slack/messages", methods=["GET"])
+@app.route("/api/slack/messages", methods=["GET"])
 def get_slack_messages():
     """Get the last 50 messages from a Slack channel"""
     try:
@@ -123,7 +123,7 @@ def get_slack_messages():
     except Exception as e:
         return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
 
-@app.route("/api/arcade/slack/user-profile", methods=["GET"])
+@app.route("/api/slack/user-profile", methods=["GET"])
 def get_user_profile():
     """Get a Slack user's profile"""
     try:
@@ -140,7 +140,7 @@ def get_user_profile():
     except Exception as e:
         return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
 
-@app.route("/api/arcade/slack/send-message", methods=["POST"])
+@app.route("/api/slack/send-message", methods=["POST"])
 def send_slack_message():
     """Send a message to a Slack channel"""
     try:
@@ -172,7 +172,7 @@ def send_slack_message():
     except Exception as e:
         return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
 
-@app.route("/api/arcade/slack/channel-users", methods=["GET"])
+@app.route("/api/slack/channel-users", methods=["GET"])
 def get_channel_users():
     """Get user profiles for all users in a channel"""
     try:

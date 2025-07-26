@@ -2,14 +2,22 @@
 
 import os
 from arcadepy import Arcade
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # ——— Setup Arcade client & authorize once ———
-client = Arcade(api_key=os.getenv("ARCADE_API_KEY"))
-USER_ID = os.getenv("ARCADE_USER_ID")
+ARCADE_API_KEY = os.getenv("ARCADE_API_KEY")
+ARCADE_USER_ID = os.getenv("ARCADE_USER_ID")
+
+if not ARCADE_API_KEY or not ARCADE_USER_ID:
+    raise RuntimeError("🛑 ARCADE_API_KEY and ARCADE_USER_ID environment variables are required")
+
+client = Arcade(api_key=ARCADE_API_KEY)
 
 auth = client.tools.authorize(
-    tool_name="Jira.CreateIssue@1.0.0",
-    user_id=USER_ID
+    tool_name="Jira.CreateIssue",
+    user_id=ARCADE_USER_ID
 )
 
 if auth.status != "completed":
@@ -36,13 +44,13 @@ def jira_create_issue(
 
     Args:
         title: The human-readable title of the ticket.
-        project_key: The Jira project key (e.g., 'NDG').
+        project_key: The Jira project key (e.g., 'PROJ').
         summary: A brief summary or short description.
         description: Detailed description of the issue.
         issue_type: One of 'Task', 'Bug', 'Story'. Defaults to 'Task'.
     """
     res = client.tools.execute(
-        tool_name="Jira.CreateIssue@1.0.0",
+        tool_name="Jira.CreateIssue",
         input={
             "title":       title,
             "project_key": project_key,
@@ -50,7 +58,7 @@ def jira_create_issue(
             "description": description,
             "issue_type":  issue_type,
         },
-        user_id=USER_ID,
+        user_id=ARCADE_USER_ID,
     )
 
     if not res.success:
