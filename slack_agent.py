@@ -1,10 +1,9 @@
-# slack_tools.py
+# slack_agent.py
 from typing import Annotated, Optional, List
 from arcade_tdk import ToolContext, tool
 from arcade_tdk.auth import Slack
 from arcade_tdk.errors import RetryableToolError
-from slack_sdk import WebClient
-from slack_sdk.errors import SlackApiError
+from tools.slack_tool import slack_post_message, slack_fetch_messages, slack_get_user_profile
 
 
 # --- Post a message -------------------------------------------------
@@ -26,11 +25,9 @@ def post_message(
     thread_ts: Annotated[Optional[str], "Parent message ts to reply in-thread"] = None,
 ) -> Annotated[str, "Timestamp (ts) of the posted message"]:
     """Send a message to a channel or thread."""
-    client = WebClient(token=context.authorization.token)
     try:
-        resp = client.chat_postMessage(channel=channel_id, text=text, thread_ts=thread_ts)
-        return resp["ts"]
-    except SlackApiError as e:
+        return slack_post_message(channel_id=channel_id, text=text, thread_ts=thread_ts)
+    except Exception as e:
         raise RetryableToolError("Slack API error", developer_message=str(e))
 
 
@@ -48,29 +45,23 @@ def fetch_messages(
     limit: Annotated[int, "How many messages to fetch (max 1000)."] = 50,
 ) -> Annotated[List[dict], "List of message objects"]:
     """Return recent channel messages (newest first)."""
-    client = WebClient(token=context.authorization.token)
-    resp = client.conversations_history(channel=channel_id, limit=limit)
-    return resp.get("messages", [])
+    try:
+        return slack_fetch_messages(channel_id=channel_id, limit=limit)
+    except Exception as e:
+        raise RetryableToolError("Slack API error", developer_message=str(e))
 
 
 # --- Get user profile -----------------------------------------------
 @tool(
     name="Slack.GetUserProfile",
-    description="Get Slack user’s basic profile (email, real_name, id).",
+    description="Get Slack user's basic profile (email, real_name, id).",
     requires_auth=Slack(scopes=["users:read", "users.profile:read"]),
 )
 def get_user_profile(
     context: ToolContext,
     user_id: Annotated[str, "Slack user ID (e.g. U123...)."],
 ) -> Annotated[dict, "User profile info (email, real_name, id)."]:
-    client = WebClient(token=context.authorization.token)
-    info = client.users_info(user=user_id)
-    user = info.get("user")
-    if not user:
-        raise RetryableToolError("User not found", developer_message=f"user_id={user_id}")
-    profile = user.get("profile", {})
-    return {
-        "id": user.get("id"),
-        "real_name": user.get("real_name"),
-        "email": profile.get("email")
-    }
+    try:
+        return slack_get_user_profile(user_id=user_id)
+    except Exception as e:
+        raise RetryableToolError("Slack API error", developer_message=str(e))
