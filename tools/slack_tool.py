@@ -2,13 +2,16 @@
 
 import os
 from arcadepy import Arcade
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # ——— Setup Arcade client & authorize once ———
 client = Arcade(api_key=os.getenv("ARCADE_API_KEY"))
 USER_ID = os.getenv("ARCADE_USER_ID")
 
 auth = client.tools.authorize(
-    tool_name="Slack.PostMessage@2.0.0",
+    tool_name="Slack.SendMessage",
     user_id=USER_ID
 )
 
@@ -38,7 +41,7 @@ def slack_post_message(
         thread_ts: Parent message ts to reply in-thread (optional).
     """
     payload = {
-        "channel_id": channel_id,
+        "conversation_id": channel_id,
         "text": text
     }
     
@@ -46,7 +49,7 @@ def slack_post_message(
         payload["thread_ts"] = thread_ts
 
     res = client.tools.execute(
-        tool_name="Slack.PostMessage@2.0.0",
+        tool_name="Slack.SendMessage",
         input=payload,
         user_id=USER_ID,
     )
@@ -76,9 +79,9 @@ def slack_fetch_messages(
         limit: How many messages to fetch (max 1000).
     """
     res = client.tools.execute(
-        tool_name="Slack.FetchMessages@2.0.0",
+        tool_name="Slack.FetchMessages@1.0.0",
         input={
-            "channel_id": channel_id,
+            "conversation_id": channel_id,
             "limit": limit
         },
         user_id=USER_ID,
@@ -105,9 +108,37 @@ def slack_get_user_profile(user_id: str) -> dict:
         user_id: Slack user ID (e.g. U123...).
     """
     res = client.tools.execute(
-        tool_name="Slack.GetUserProfile@2.0.0",
+        tool_name="Slack.Slack.GetUsersInfo",
         input={
             "user_id": user_id
+        },
+        user_id=USER_ID,
+    )
+
+    if not res.success:
+        code = getattr(res, "error_code", None)
+        msg = getattr(res, "error_message", str(res))
+        raise RuntimeError(f"Arcade tool call failed [{code}]: {msg}")
+
+    api_error = res.output.get("error")
+    if api_error:
+        raise RuntimeError(f"Slack API error: {api_error}")
+
+    return res.output
+
+
+def slack_get_channel_info(channel_id: str) -> dict:
+    """
+    Get Slack channel info via Arcade.
+    Raises RuntimeError on failure.
+
+    Args:
+        channel_id: Slack channel ID.
+    """
+    res = client.tools.execute(
+        tool_name="Slack.GetConversationMetadata",
+        input={
+            "conversation_id": channel_id
         },
         user_id=USER_ID,
     )

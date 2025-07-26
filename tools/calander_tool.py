@@ -8,7 +8,7 @@ client = Arcade(api_key=os.getenv("ARCADE_API_KEY"))
 USER_ID = os.getenv("ARCADE_USER_ID")
 
 auth = client.tools.authorize(
-    tool_name="GoogleCalendar.CreateEvent@3.0.0",
+    tool_name="GoogleCalendar.CreateEvent@1.0.0",
     user_id=USER_ID
 )
 
@@ -53,7 +53,7 @@ def create_calendar_event(
     }
 
     res = client.tools.execute(
-        tool_name="GoogleCalendar.CreateEvent@3.0.0",
+        tool_name="GoogleCalendar.CreateEvent@1.0.0",
         input=payload,
         user_id=USER_ID,
     )

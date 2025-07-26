@@ -8,7 +8,7 @@ client = Arcade(api_key=os.getenv("ARCADE_API_KEY"))
 USER_ID = os.getenv("ARCADE_USER_ID")
 
 auth = client.tools.authorize(
-    tool_name="Jira.CreateIssue@2.0.0",
+    tool_name="Jira.CreateIssue@1.0.0",
     user_id=USER_ID
 )
 
@@ -42,7 +42,7 @@ def jira_create_issue(
         issue_type: One of 'Task', 'Bug', 'Story'. Defaults to 'Task'.
     """
     res = client.tools.execute(
-        tool_name="Jira.CreateIssue@2.0.0",
+        tool_name="Jira.CreateIssue@1.0.0",
         input={
             "title":       title,
             "project_key": project_key,
