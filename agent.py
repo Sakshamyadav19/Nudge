@@ -30,7 +30,7 @@ def create_jira_ticket(text, slack_user):
         # Create Jira ticket using the new tool
         key = jira_create_issue(
             title=text[:120],
-            project_key="PROJ",
+            project_key="DP",
             summary=text[:120],
             description=f"Raised from Slack:\n\n{text}",
             issue_type="Task"

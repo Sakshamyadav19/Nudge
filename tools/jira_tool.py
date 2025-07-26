@@ -53,7 +53,7 @@ def jira_create_issue(
         tool_name="Jira.CreateIssue",
         input={
             "title":       title,
-            "project_key": project_key,
+            "project": project_key,
             "summary":     summary,
             "description": description,
             "issue_type":  issue_type,
